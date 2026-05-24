@@ -128,18 +128,27 @@ make_arrow_ink (gdouble x1, gdouble y1, gdouble x2, gdouble y2,
 	gdouble h  = head_size;
 	gdouble w  = h * 0.4;
 
-	/* Single polyline: shaft-start → tip → wing1 → wing2 → tip.
-	 * Shaft and arrowhead share a MITER JOIN at the tip rather than
-	 * two separate butt-caps, so the tip is always sharp and connected. */
-	PpsPoint pts[5] = {
-		{ x1, y1 },                                    /* shaft start */
-		{ x2, y2 },                                    /* tip         */
-		{ x2 - ux * h + px * w, y2 - uy * h + py * w }, /* wing 1   */
-		{ x2 - ux * h - px * w, y2 - uy * h - py * w }, /* wing 2   */
-		{ x2, y2 },                                    /* back to tip */
+	/* Two separate paths:
+	 *   1. Shaft: [start → tip]
+	 *   2. V-arrowhead: [wing1 → TIP → wing2]
+	 * The tip is the INTERIOR middle point of path 2, so it gets a MITER
+	 * JOIN (sharp spike) rather than a BUTT CAP (flat edge) in both
+	 * Papers' GSK renderer and Poppler's Cairo renderer. */
+	PpsPoint shaft[2] = {
+		{ x1, y1 }, /* start */
+		{ x2, y2 }, /* tip   */
 	};
-	PpsPath   *path = make_path (pts, 5);
-	GSList    *list = g_slist_prepend (NULL, path);
+	PpsPoint v[3] = {
+		{ x2 - ux * h + px * w, y2 - uy * h + py * w }, /* wing 1 */
+		{ x2, y2 },                                       /* TIP    */
+		{ x2 - ux * h - px * w, y2 - uy * h - py * w }, /* wing 2 */
+	};
+	PpsPath *shaft_path = make_path (shaft, 2);
+	PpsPath *v_path     = make_path (v, 3);
+	/* prepend in reverse order so list is [shaft, v] */
+	GSList *list = NULL;
+	list = g_slist_prepend (list, v_path);
+	list = g_slist_prepend (list, shaft_path);
 	PpsInkList *ink = pps_ink_list_new_for_list (list);
 	g_slist_free (list);
 	return ink;
@@ -157,10 +166,12 @@ draw_arrow_preview (cairo_t *cr,
 	gdouble dy  = y2 - y1;
 	gdouble len = sqrt (dx * dx + dy * dy);
 
-	/* Draw shaft + open V-head as one continuous polyline, matching the
-	 * stored annotation format: [start, tip, wing1, wing2, tip]. */
+	/* Draw shaft then V-arrowhead as two separate strokes, matching the
+	 * two-path stored annotation format.  The tip is the interior middle
+	 * point of the V so it gets a round/miter join, not a butt cap. */
 	cairo_move_to (cr, x1, y1);
 	cairo_line_to (cr, x2, y2);
+	cairo_stroke (cr);
 
 	if (len > 0.1) {
 		gdouble ux = dx / len;
@@ -170,11 +181,11 @@ draw_arrow_preview (cairo_t *cr,
 		gdouble h  = head_size;
 		gdouble w  = h * 0.4;
 
-		cairo_line_to (cr, x2 - ux * h + px * w, y2 - uy * h + py * w);
-		cairo_line_to (cr, x2 - ux * h - px * w, y2 - uy * h - py * w);
-		cairo_line_to (cr, x2, y2);
+		cairo_move_to (cr, x2 - ux * h + px * w, y2 - uy * h + py * w); /* wing 1 */
+		cairo_line_to (cr, x2, y2);                                        /* tip (ROUND JOIN) */
+		cairo_line_to (cr, x2 - ux * h - px * w, y2 - uy * h - py * w); /* wing 2 */
+		cairo_stroke (cr);
 	}
-	cairo_stroke (cr);
 }
 
 static void

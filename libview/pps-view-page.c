@@ -644,7 +644,14 @@ display_annotation_layers (PpsViewPage *page)
 		gtk_widget_set_visible (GTK_WIDGET (priv->layers[LAYER_OBJECTS]), FALSE);
 	}
 
-	if (state != PPS_ANNOTATION_EDITING_STATE_INK && priv->layers[LAYER_INK]) {
+	/* Keep the ink layer visible in SHAPE mode too — it renders committed
+	 * ink annotations with correct closed-path joins (gsk_path_builder_close),
+	 * which looks better than Poppler's own butt-cap rendering.  The shape
+	 * layer sits above it in Z-order and claims all input events, so the
+	 * ink layer just renders passively without interfering with drawing. */
+	if (state != PPS_ANNOTATION_EDITING_STATE_INK &&
+	    state != PPS_ANNOTATION_EDITING_STATE_SHAPE &&
+	    priv->layers[LAYER_INK]) {
 		gtk_widget_set_visible (GTK_WIDGET (priv->layers[LAYER_INK]), FALSE);
 	}
 
@@ -665,6 +672,16 @@ display_annotation_layers (PpsViewPage *page)
 		}
 		layer = priv->layers[LAYER_INK];
 	} else if (state == PPS_ANNOTATION_EDITING_STATE_SHAPE) {
+		/* Ensure the ink layer exists and is visible so it can render previously
+		 * committed shape annotations with proper closed-path corner joins.
+		 * Insert it BEFORE the shape layer so it ends up below it in Z-order. */
+		if (!priv->layers[LAYER_INK]) {
+			priv->layers[LAYER_INK] = PPS_ANNOTATION_LAYER (pps_annotation_layer_ink_new (pps_document_model_get_document (priv->model), priv->model, priv->annots_context));
+			gtk_widget_insert_before (GTK_WIDGET (priv->layers[LAYER_INK]), GTK_WIDGET (page), NULL);
+		}
+		pps_annotation_layer_set_page (priv->layers[LAYER_INK], priv->index);
+		gtk_widget_set_visible (GTK_WIDGET (priv->layers[LAYER_INK]), TRUE);
+
 		if (!priv->layers[LAYER_SHAPE]) {
 			priv->layers[LAYER_SHAPE] = PPS_ANNOTATION_LAYER (pps_annotation_layer_shape_new (pps_document_model_get_document (priv->model), priv->model, priv->annots_context));
 			gtk_widget_insert_before (GTK_WIDGET (priv->layers[LAYER_SHAPE]), GTK_WIDGET (page), NULL);
