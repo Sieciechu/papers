@@ -1,49 +1,32 @@
-# ![papers-logo] Document Viewer
+# Document Viewer
 
 Papers is a document viewer capable of displaying multiple and single
 page document formats like PDF and DejaVu.  For more general
 information about Papers and how to get started, please visit
 [https://welcome.gnome.org/app/Papers](https://welcome.gnome.org/app/Papers)
 
+This is the fork of https://github.com/GNOME/papers/ . I added annotation tools:
+draw, shapes, blur and text! Which are missing in the original while I needed them very much.
+
+![Annotation Tools Screenshot](data/screenshots/annotation-tools.png)
+
 ## Installation
 
-Papers is licensed under the [GPLv2][license], get it on Flathub!
+To build
+```
+ninja -C build
+```
 
-[![flatpak]](https://flathub.org/apps/details/org.gnome.Papers)
+To install
+```
+sudo ninja -C build install
+```
 
-## Reporting and Development
+## License
 
-If you experience issues with Papers, check out the [reporting tips](TESTING.md).
-Developers should make sure to read the [contributing](CONTRIBUTING.md)
-guidelines, before starting to work on any changes.
+Papers is licensed under the [GPLv2](COPYING).
 
-### Papers Requirements
-
-* [GNOME Platform libraries][gnome]
-* [Poppler for PDF viewing][poppler]
-
-### Papers Optional Backend Libraries
-
-* [DjVuLibre for DjVu viewing][djvulibre]
-* [Archive library for Comic Book Resources (CBR) viewing][comics]
-* [LibTiff for Multipage TIFF viewing][tiff]
-
-[gnome]: https://www.gnome.org/
-[poppler]: https://poppler.freedesktop.org/
-[djvulibre]: https://djvu.sourceforge.net/
-[comics]: https://libarchive.org/
-[tiff]: https://libtiff.gitlab.io/libtiff/
-[license]: COPYING
-[papers-logo]: data/icons/scalable/apps/org.gnome.Papers.svg
-[flatpak]: https://flathub.org/api/badge?svg&locale=en
-
-## Documentation
-
-The documentation for the libraries can be found online.
-
-* [libppsview](https://gnome.pages.gitlab.gnome.org/papers/view/)
-* [libppsdocument](https://gnome.pages.gitlab.gnome.org/papers/document/)
-
-## Code of Conduct
+## Contribute
 
 When interacting with the project, the [GNOME Code Of Conduct](https://conduct.gnome.org/) applies.
+

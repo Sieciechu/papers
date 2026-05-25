@@ -40,7 +40,12 @@ pub const TOOL_PENCIL: PpsAnnotationTool = 0;
 pub const TOOL_HIGHLIGHT: PpsAnnotationTool = 1;
 pub const TOOL_ERASER: PpsAnnotationTool = 2;
 pub const TOOL_TEXT: PpsAnnotationTool = 3;
-pub const TOOL_MAX: PpsAnnotationTool = 4;
+pub const TOOL_LINE: PpsAnnotationTool = 4;
+pub const TOOL_RECTANGLE: PpsAnnotationTool = 5;
+pub const TOOL_CIRCLE: PpsAnnotationTool = 6;
+pub const TOOL_ARROW: PpsAnnotationTool = 7;
+pub const TOOL_PIXELIZE: PpsAnnotationTool = 8;
+pub const TOOL_MAX: PpsAnnotationTool = 9;
 
 pub type PpsAttachmentContextError = c_int;
 pub const PPS_ATTACHMENT_CONTEXT_ERROR_NOT_IMPLEMENTED: PpsAttachmentContextError = 0;
@@ -71,6 +76,8 @@ pub const PPS_ANNOTATION_EDITING_STATE_INK: PpsAnnotationEditingState = 1;
 pub const PPS_ANNOTATION_EDITING_STATE_TEXT: PpsAnnotationEditingState = 2;
 pub const PPS_ANNOTATION_EDITING_STATE_STAMP: PpsAnnotationEditingState = 4;
 pub const PPS_ANNOTATION_EDITING_STATE_INSERT_TEXT: PpsAnnotationEditingState = 8;
+pub const PPS_ANNOTATION_EDITING_STATE_SHAPE: PpsAnnotationEditingState = 16;
+pub const PPS_ANNOTATION_EDITING_STATE_PIXELIZE: PpsAnnotationEditingState = 32;
 
 pub type PpsJobPageDataFlags = c_uint;
 pub const PPS_PAGE_DATA_INCLUDE_NONE: PpsJobPageDataFlags = 0;

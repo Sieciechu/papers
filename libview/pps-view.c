@@ -4510,6 +4510,19 @@ selection_begin_cb (GtkGestureDrag *selection_gesture,
 		return;
 	}
 
+	/* Don't start text selection over a pixelize stamp annotation —
+	 * the visual overlay must also prevent accidental text extraction.
+	 * (The saved PDF has the text truly destroyed; this guard protects
+	 * the in-session live view.) */
+	{
+		PpsAnnotation *annot = get_annotation_at_location (view, x, y);
+		if (annot && pps_annotation_get_annotation_type (annot) == PPS_ANNOTATION_TYPE_STAMP) {
+			gtk_gesture_set_state (GTK_GESTURE (selection_gesture),
+			                       GTK_EVENT_SEQUENCE_DENIED);
+			return;
+		}
+	}
+
 	if (state & GDK_SHIFT_MASK) {
 		gtk_gesture_set_state (GTK_GESTURE (selection_gesture),
 		                       GTK_EVENT_SEQUENCE_CLAIMED);

@@ -1199,20 +1199,60 @@ impl imp::PpsDocumentView {
         }
     }
 
+    /// Called when the annotation tool changes while already in edit mode.
+    /// Updates the editing state to match the new tool category.
+    pub(super) fn on_annotation_tool_changed(&self) {
+        let editing_state = self.model.annotation_editing_state();
+        // Only update if we are currently in some editing mode (not NONE or STAMP)
+        if editing_state == papers_view::AnnotationEditingState::NONE
+            || editing_state == papers_view::AnnotationEditingState::STAMP
+        {
+            return;
+        }
+
+        let tool = self.model.annotation_model().unwrap().tool();
+        let new_state = match tool {
+            AnnotationTool::Text => papers_view::AnnotationEditingState::INSERT_TEXT
+                .union(papers_view::AnnotationEditingState::TEXT),
+            AnnotationTool::Line
+            | AnnotationTool::Rectangle
+            | AnnotationTool::Circle
+            | AnnotationTool::Arrow => papers_view::AnnotationEditingState::SHAPE,
+            AnnotationTool::Pixelize => papers_view::AnnotationEditingState::PIXELIZE,
+            _ => papers_view::AnnotationEditingState::INK,
+        };
+
+        self.model.set_annotation_editing_state(new_state);
+    }
+
     pub fn cmd_toggle_edit_mode(&self) {
         let editing_state = self.model.annotation_editing_state();
         // Just toggle the state - the notify signal will handle UI updates
         if editing_state == papers_view::AnnotationEditingState::NONE
             || editing_state == papers_view::AnnotationEditingState::STAMP
         {
-            if self.model.annotation_model().unwrap().tool() == AnnotationTool::Text {
-                self.model.set_annotation_editing_state(
-                    papers_view::AnnotationEditingState::INSERT_TEXT
-                        .union(papers_view::AnnotationEditingState::TEXT),
-                );
-            } else {
-                self.model
-                    .set_annotation_editing_state(papers_view::AnnotationEditingState::INK);
+            match self.model.annotation_model().unwrap().tool() {
+                AnnotationTool::Text => {
+                    self.model.set_annotation_editing_state(
+                        papers_view::AnnotationEditingState::INSERT_TEXT
+                            .union(papers_view::AnnotationEditingState::TEXT),
+                    );
+                }
+                AnnotationTool::Line
+                | AnnotationTool::Rectangle
+                | AnnotationTool::Circle
+                | AnnotationTool::Arrow => {
+                    self.model
+                        .set_annotation_editing_state(papers_view::AnnotationEditingState::SHAPE);
+                }
+                AnnotationTool::Pixelize => {
+                    self.model
+                        .set_annotation_editing_state(papers_view::AnnotationEditingState::PIXELIZE);
+                }
+                _ => {
+                    self.model
+                        .set_annotation_editing_state(papers_view::AnnotationEditingState::INK);
+                }
             }
         } else {
             self.model
@@ -1225,9 +1265,14 @@ impl imp::PpsDocumentView {
         let radius = state.get::<f64>().unwrap();
 
         match annotation_model.tool() {
-            AnnotationTool::Pencil => annotation_model.set_pen_radius(radius),
+            AnnotationTool::Pencil
+            | AnnotationTool::Line
+            | AnnotationTool::Rectangle
+            | AnnotationTool::Circle
+            | AnnotationTool::Arrow => annotation_model.set_pen_radius(radius),
             AnnotationTool::Highlight => annotation_model.set_highlight_radius(radius),
             AnnotationTool::Eraser => annotation_model.set_eraser_radius(radius),
+            AnnotationTool::Pixelize => { /* pixelize has no radius setting */ }
             _ => panic!("Unexpected tool"),
         }
 
@@ -1254,7 +1299,11 @@ impl imp::PpsDocumentView {
         };
 
         match tool {
-            AnnotationTool::Pencil => annotation_model.set_pen_color(&rgba),
+            AnnotationTool::Pencil
+            | AnnotationTool::Line
+            | AnnotationTool::Rectangle
+            | AnnotationTool::Circle
+            | AnnotationTool::Arrow => annotation_model.set_pen_color(&rgba),
             AnnotationTool::Highlight => {
                 rgba.set_alpha(0.7);
                 annotation_model.set_highlight_color(&rgba);
@@ -1265,6 +1314,7 @@ impl imp::PpsDocumentView {
             AnnotationTool::Text => {
                 annotation_model.set_text_color(&rgba);
             }
+            AnnotationTool::Pixelize => { /* pixelize has no color setting */ }
             _ => panic!("Unexpected tool"),
         }
 

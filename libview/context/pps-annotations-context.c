@@ -726,14 +726,23 @@ pps_annotations_context_add_annotation_sync (PpsAnnotationsContext *self,
 		break;
 	}
 	case PPS_ANNOTATION_TYPE_STAMP: {
-		const gdouble ratio = (double) cairo_image_surface_get_height ((cairo_surface_t *) user_data) / (double) cairo_image_surface_get_width ((cairo_surface_t *) user_data);
 		annot = pps_annotation_stamp_new (page);
 		pps_annotation_stamp_set_surface (PPS_ANNOTATION_STAMP (annot), (cairo_surface_t *) user_data);
-		doc_rect.x1 = start->x;
-		doc_rect.y1 = start->y;
-		// FIXME: this could depend on the actual image size
-		doc_rect.x2 = start->x + 100.;
-		doc_rect.y2 = start->y + ratio * (doc_rect.x2 - doc_rect.x1);
+		if (end != NULL) {
+			/* Precise placement: caller controls exact bounds (e.g. pixelize tool). */
+			doc_rect.x1 = MIN (start->x, end->x);
+			doc_rect.y1 = MIN (start->y, end->y);
+			doc_rect.x2 = MAX (start->x, end->x);
+			doc_rect.y2 = MAX (start->y, end->y);
+		} else {
+			/* Legacy: auto-size stamp based on surface aspect ratio. */
+			const gdouble ratio = (double) cairo_image_surface_get_height ((cairo_surface_t *) user_data) / (double) cairo_image_surface_get_width ((cairo_surface_t *) user_data);
+			doc_rect.x1 = start->x;
+			doc_rect.y1 = start->y;
+			// FIXME: this could depend on the actual image size
+			doc_rect.x2 = start->x + 100.;
+			doc_rect.y2 = start->y + ratio * (doc_rect.x2 - doc_rect.x1);
+		}
 		break;
 	}
 	case PPS_ANNOTATION_TYPE_INK: {
