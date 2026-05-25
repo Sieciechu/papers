@@ -256,6 +256,8 @@ pps_annotation_model_set_property (GObject *object,
 			pps_annotation_model_set_tool (model, TOOL_CIRCLE);
 		} else if (!g_strcmp0 (tool, "arrow")) {
 			pps_annotation_model_set_tool (model, TOOL_ARROW);
+		} else if (!g_strcmp0 (tool, "pixelize")) {
+			pps_annotation_model_set_tool (model, TOOL_PIXELIZE);
 		} else {
 			g_critical ("unknown tool: %s", tool);
 		}
@@ -337,6 +339,9 @@ pps_annotation_model_get_property (GObject *object,
 			break;
 		case TOOL_ARROW:
 			g_value_set_string (value, "arrow");
+			break;
+		case TOOL_PIXELIZE:
+			g_value_set_string (value, "pixelize");
 			break;
 		default:
 			g_critical ("unknown tool: %d", model->tool);

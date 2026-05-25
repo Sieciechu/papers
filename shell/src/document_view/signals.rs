@@ -65,7 +65,8 @@ impl imp::PpsDocumentView {
         self.update_edit_toolbar_visibility(
             state.contains(AnnotationEditingState::INSERT_TEXT)
                 || state.contains(AnnotationEditingState::INK)
-                || state.contains(AnnotationEditingState::SHAPE),
+                || state.contains(AnnotationEditingState::SHAPE)
+                || state.contains(AnnotationEditingState::PIXELIZE),
         );
     }
 
@@ -950,6 +951,11 @@ impl imp::PpsDocumentView {
     #[template_callback(function, name = "is_arrow")]
     fn is_arrow(a: i32) -> bool {
         a == AnnotationTool::Arrow.into_glib()
+    }
+
+    #[template_callback(function, name = "is_pixelize")]
+    fn is_pixelize(a: i32) -> bool {
+        a == AnnotationTool::Pixelize.into_glib()
     }
 
     #[template_callback(function, name = "is_shape")]

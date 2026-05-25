@@ -26,6 +26,8 @@ pub enum AnnotationTool {
     Circle,
     #[doc(alias = "TOOL_ARROW")]
     Arrow,
+    #[doc(alias = "TOOL_PIXELIZE")]
+    Pixelize,
     #[doc(alias = "TOOL_MAX")]
     Max,
     #[doc(hidden)]
@@ -47,6 +49,7 @@ impl IntoGlib for AnnotationTool {
             Self::Rectangle => ffi::TOOL_RECTANGLE,
             Self::Circle => ffi::TOOL_CIRCLE,
             Self::Arrow => ffi::TOOL_ARROW,
+            Self::Pixelize => ffi::TOOL_PIXELIZE,
             Self::Max => ffi::TOOL_MAX,
             Self::__Unknown(value) => value,
         }
@@ -68,6 +71,7 @@ impl FromGlib<ffi::PpsAnnotationTool> for AnnotationTool {
             ffi::TOOL_RECTANGLE => Self::Rectangle,
             ffi::TOOL_CIRCLE => Self::Circle,
             ffi::TOOL_ARROW => Self::Arrow,
+            ffi::TOOL_PIXELIZE => Self::Pixelize,
             ffi::TOOL_MAX => Self::Max,
             value => Self::__Unknown(value),
         }

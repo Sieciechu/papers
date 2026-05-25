@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "pps-annotation-layer-ink.h"
+#include "pps-annotation-layer-pixelize.h"
 #include "pps-annotation-layer-objects.h"
 #include "pps-annotation-layer-shape.h"
 #include "pps-colors.h"
@@ -39,6 +40,7 @@ enum {
 	LAYER_INK,
 	LAYER_OBJECTS,
 	LAYER_SHAPE,
+	LAYER_PIXELIZE,
 	LAYER_COUNT
 };
 
@@ -651,12 +653,25 @@ display_annotation_layers (PpsViewPage *page)
 	 * ink layer just renders passively without interfering with drawing. */
 	if (state != PPS_ANNOTATION_EDITING_STATE_INK &&
 	    state != PPS_ANNOTATION_EDITING_STATE_SHAPE &&
+	    state != PPS_ANNOTATION_EDITING_STATE_PIXELIZE &&
 	    priv->layers[LAYER_INK]) {
 		gtk_widget_set_visible (GTK_WIDGET (priv->layers[LAYER_INK]), FALSE);
 	}
 
 	if (state != PPS_ANNOTATION_EDITING_STATE_SHAPE && priv->layers[LAYER_SHAPE]) {
 		gtk_widget_set_visible (GTK_WIDGET (priv->layers[LAYER_SHAPE]), FALSE);
+	}
+
+	/* Pixelize layer: stays visible during any active editing so committed
+	 * regions are not erased when the user switches to a shape tool.
+	 * gtk_widget_set_can_target(FALSE) makes it click-through so that shape
+	 * gestures reach LAYER_SHAPE unobstructed. */
+	if (priv->layers[LAYER_PIXELIZE]) {
+		gboolean any_editing = (state != PPS_ANNOTATION_EDITING_STATE_NONE &&
+		                        state != PPS_ANNOTATION_EDITING_STATE_STAMP);
+		gboolean is_pixelize = (state == PPS_ANNOTATION_EDITING_STATE_PIXELIZE);
+		gtk_widget_set_visible    (GTK_WIDGET (priv->layers[LAYER_PIXELIZE]), any_editing);
+		gtk_widget_set_can_target (GTK_WIDGET (priv->layers[LAYER_PIXELIZE]), is_pixelize);
 	}
 
 	if (state & PPS_ANNOTATION_EDITING_STATE_INSERT_TEXT) {
@@ -687,6 +702,27 @@ display_annotation_layers (PpsViewPage *page)
 			gtk_widget_insert_before (GTK_WIDGET (priv->layers[LAYER_SHAPE]), GTK_WIDGET (page), NULL);
 		}
 		layer = priv->layers[LAYER_SHAPE];
+	} else if (state == PPS_ANNOTATION_EDITING_STATE_PIXELIZE) {
+		/* Keep the ink layer visible so previously committed ink annotations
+		 * are still rendered underneath the pixelize overlay. */
+		if (!priv->layers[LAYER_INK]) {
+			priv->layers[LAYER_INK] = PPS_ANNOTATION_LAYER (pps_annotation_layer_ink_new (pps_document_model_get_document (priv->model), priv->model, priv->annots_context));
+			gtk_widget_insert_before (GTK_WIDGET (priv->layers[LAYER_INK]), GTK_WIDGET (page), NULL);
+		}
+		pps_annotation_layer_set_page (priv->layers[LAYER_INK], priv->index);
+		gtk_widget_set_visible (GTK_WIDGET (priv->layers[LAYER_INK]), TRUE);
+
+		if (!priv->layers[LAYER_PIXELIZE]) {
+			priv->layers[LAYER_PIXELIZE] = PPS_ANNOTATION_LAYER (pps_annotation_layer_pixelize_new (pps_document_model_get_document (priv->model), priv->model, priv->annots_context, priv->pixbuf_cache));
+			/* Insert below LAYER_SHAPE so shapes always render on top of
+			 * pixelized regions regardless of which tool was activated first. */
+			GtkWidget *before = priv->layers[LAYER_SHAPE]
+			    ? GTK_WIDGET (priv->layers[LAYER_SHAPE])
+			    : NULL;
+			gtk_widget_insert_before (GTK_WIDGET (priv->layers[LAYER_PIXELIZE]),
+			                          GTK_WIDGET (page), before);
+		}
+		layer = priv->layers[LAYER_PIXELIZE];
 	}
 
 	if (layer) {
@@ -1565,6 +1601,8 @@ pps_view_page_setup (PpsViewPage *page,
 	                          G_CALLBACK (gtk_widget_queue_resize), page);
 	g_signal_connect (priv->model, "notify::inverted-colors",
 	                  G_CALLBACK (inverted_changed_cb), page);
+	g_signal_connect_swapped (priv->model, "notify::annotation-editing-state",
+	                          G_CALLBACK (display_annotation_layers), page);
 	g_signal_connect (priv->pixbuf_cache, "job-finished",
 	                  G_CALLBACK (job_finished_cb), page);
 	if (priv->search_context != NULL) {

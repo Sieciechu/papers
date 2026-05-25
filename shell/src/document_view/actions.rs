@@ -1218,6 +1218,7 @@ impl imp::PpsDocumentView {
             | AnnotationTool::Rectangle
             | AnnotationTool::Circle
             | AnnotationTool::Arrow => papers_view::AnnotationEditingState::SHAPE,
+            AnnotationTool::Pixelize => papers_view::AnnotationEditingState::PIXELIZE,
             _ => papers_view::AnnotationEditingState::INK,
         };
 
@@ -1244,6 +1245,10 @@ impl imp::PpsDocumentView {
                     self.model
                         .set_annotation_editing_state(papers_view::AnnotationEditingState::SHAPE);
                 }
+                AnnotationTool::Pixelize => {
+                    self.model
+                        .set_annotation_editing_state(papers_view::AnnotationEditingState::PIXELIZE);
+                }
                 _ => {
                     self.model
                         .set_annotation_editing_state(papers_view::AnnotationEditingState::INK);
@@ -1267,6 +1272,7 @@ impl imp::PpsDocumentView {
             | AnnotationTool::Arrow => annotation_model.set_pen_radius(radius),
             AnnotationTool::Highlight => annotation_model.set_highlight_radius(radius),
             AnnotationTool::Eraser => annotation_model.set_eraser_radius(radius),
+            AnnotationTool::Pixelize => { /* pixelize has no radius setting */ }
             _ => panic!("Unexpected tool"),
         }
 
@@ -1308,6 +1314,7 @@ impl imp::PpsDocumentView {
             AnnotationTool::Text => {
                 annotation_model.set_text_color(&rgba);
             }
+            AnnotationTool::Pixelize => { /* pixelize has no color setting */ }
             _ => panic!("Unexpected tool"),
         }
 

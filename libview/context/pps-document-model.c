@@ -217,6 +217,9 @@ pps_document_model_update_editing_state (GObject *annotation_model, GParamSpec *
 	case TOOL_ARROW:
 		pps_document_model_set_annotation_editing_state (model, PPS_ANNOTATION_EDITING_STATE_SHAPE);
 		break;
+	case TOOL_PIXELIZE:
+		pps_document_model_set_annotation_editing_state (model, PPS_ANNOTATION_EDITING_STATE_PIXELIZE);
+		break;
 	default:
 		pps_document_model_set_annotation_editing_state (model, PPS_ANNOTATION_EDITING_STATE_INK);
 		break;

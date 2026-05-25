@@ -37,6 +37,7 @@ typedef enum {
 	TOOL_RECTANGLE,
 	TOOL_CIRCLE,
 	TOOL_ARROW,
+	TOOL_PIXELIZE,
 	TOOL_MAX
 } PpsAnnotationTool;
 

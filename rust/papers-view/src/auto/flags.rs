@@ -22,6 +22,8 @@ bitflags! {
         const INSERT_TEXT = ffi::PPS_ANNOTATION_EDITING_STATE_INSERT_TEXT as _;
         #[doc(alias = "PPS_ANNOTATION_EDITING_STATE_SHAPE")]
         const SHAPE = ffi::PPS_ANNOTATION_EDITING_STATE_SHAPE as _;
+        #[doc(alias = "PPS_ANNOTATION_EDITING_STATE_PIXELIZE")]
+        const PIXELIZE = ffi::PPS_ANNOTATION_EDITING_STATE_PIXELIZE as _;
     }
 }
 

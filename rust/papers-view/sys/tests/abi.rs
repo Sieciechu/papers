@@ -629,7 +629,8 @@ const RUST_CONSTANTS: &[(&str, &str)] = &[
     ("(gint) PPS_SIZING_FREE", "2"),
     ("(gint) TOOL_ERASER", "2"),
     ("(gint) TOOL_HIGHLIGHT", "1"),
-    ("(gint) TOOL_MAX", "4"),
+    ("(gint) TOOL_PIXELIZE", "8"),
+    ("(gint) TOOL_MAX", "9"),
     ("(gint) TOOL_PENCIL", "0"),
     ("(gint) TOOL_TEXT", "3"),
 ];
