@@ -31,9 +31,9 @@ get_annots (void)
 	pps_job_run (job);
 
 	document = pps_job_load_get_loaded_document (PPS_JOB_LOAD (job));
-	n_pages = pps_document_get_n_pages (document);
 
 	g_assert_nonnull (document);
+	n_pages = pps_document_get_n_pages (document);
 	g_assert (n_pages == 1);
 
 	page = pps_document_get_page (document, 0);
@@ -74,9 +74,9 @@ load_encrypted (void)
 	pps_job_run (job);
 
 	document = pps_job_load_get_loaded_document (PPS_JOB_LOAD (job));
-	n_pages = pps_document_get_n_pages (document);
 
 	g_assert_nonnull (document);
+	n_pages = pps_document_get_n_pages (document);
 	g_assert (n_pages == 1);
 }
 
